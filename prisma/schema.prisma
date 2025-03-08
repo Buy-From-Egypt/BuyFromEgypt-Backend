@@ -8,112 +8,207 @@ datasource db {
 }
 
 model User {
-  userId              String   @id @default(uuid())
-  name                String
-  email               String   @unique
-  password            String
-  phoneNumber         String   @unique
-  nationalId          String   @unique
-  country             String
-  taxId               String?
-  role                String
-  type                String
-  active              Boolean  @default(true)
-  profileImage        String?
-  registrationNumber  String?
-  industrial          String?
-  industrySector      String?
-  commercial          String?
-  address             String?
-  posts               Post[]          @relation("UserPosts")
-  comments            Comment[]       @relation("UserComments")
-  certifications      Certification[] @relation("UserCertifications")
-  orders              Order[]         @relation("UserOrders")
-  products            Product[]       @relation("UserProducts")
-  messagesSent        Message[]       @relation("SentMessages")
-  messagesReceived    Message[]       @relation("ReceivedMessages")
-  categories          Category[]      @relation("UserCategories")
+  userId             String          @id @default(uuid())
+  name               String
+  email              String          @unique
+  password           String
+  phoneNumber        String          @unique
+  nationalId         String          @unique
+  country            String
+  taxId              String          @unique
+  role               RoleEnum        @default(USER)
+  type               TypeEnum
+  active             Boolean         @default(true)
+  profileImage       String?
+  registrationNumber String?
+  industrial         String?
+  industrySector     String?
+  commercial         String?
+  address            String?         @db.Text
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  posts              Post[]          @relation("UserPosts")
+  comments           Comment[]       @relation("UserComments")
+  certifications     Certification[] @relation("UserCertifications")
+  orders             Order[]         @relation("UserOrders")
+  products           Product[]       @relation("UserProducts")
+  approvedProducts   Product[]       @relation("ApprovedProducts")
+  messagesSent       Message[]       @relation("SentMessages")
+  messagesReceived   Message[]       @relation("ReceivedMessages")
+  categories         Category[]      @relation("UserCategories")
+  followers          Follower[]      @relation("FollowedUsers")
+  following          Follower[]      @relation("FollowingUsers")
+  likedPosts         PostLike[]      @relation("UserLikes")
+
+  @@index([createdAt])
+  @@index([role, active])
+}
+
+model Follower {
+  id          String   @id @default(uuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("FollowingUsers", fields: [followerId], references: [userId])
+  following   User     @relation("FollowedUsers", fields: [followingId], references: [userId])
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
 }
 
 model Post {
-  postId              String   @id @default(uuid())
-  content             String
-  userId              String
-  approvedBy          String?
-  status              String
-  user                User     @relation("UserPosts", fields: [userId], references: [userId])
-  comments            Comment[]
+  postId     String     @id @default(uuid())
+  content    String     @db.Text
+  userId     String
+  approvedBy String?
+  status     String
+  createdBy  User       @relation("UserPosts", fields: [userId], references: [userId])
+  comments   Comment[]
+  productId  String
+  product    Product    @relation(fields: [productId], references: [productId])
+  likes      PostLike[] @relation("PostLikes")
+
+  @@index([userId])
+  @@index([status])
+  @@index([productId])
+  @@index([approvedBy])
+}
+
+model PostLike {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+  post      Post     @relation("PostLikes", fields: [postId], references: [postId])
+  user      User     @relation("UserLikes", fields: [userId], references: [userId])
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
 }
 
 model Comment {
-  commentId           String   @id @default(uuid())
-  commentText         String
-  postId              String
-  userId              String
-  post                Post     @relation(fields: [postId], references: [postId])
-  user                User     @relation("UserComments", fields: [userId], references: [userId])
+  commentId   String @id @default(uuid())
+  commentText String @db.Text
+  postId      String
+  userId      String
+  post        Post   @relation(fields: [postId], references: [postId])
+  user        User   @relation("UserComments", fields: [userId], references: [userId])
+
+  @@index([postId])
 }
 
 model Certification {
-  certificationId     String   @id @default(uuid())
-  entityId            String
-  entityType          String
-  title               String
-  description         String?
-  issuedBy            String
-  issueDate           DateTime
-  expiryDate          DateTime?
-  isVerified          Boolean  @default(false)
-  userId              String?
-  user                User?    @relation("UserCertifications", fields: [userId], references: [userId])
-  products            Product[] @relation("ProductCertifications")
+  certificationId String    @id @default(uuid())
+  entityId        String
+  entityType      String
+  title           String
+  description     String?   @db.Text
+  issuedBy        String
+  issueDate       DateTime
+  expiryDate      DateTime?
+  isVerified      Boolean   @default(false)
+  userId          String?
+  user            User?     @relation("UserCertifications", fields: [userId], references: [userId])
+  products        Product[] @relation("ProductCertifications")
+
+  @@index([userId])
+  @@index([isVerified])
 }
 
 model Order {
-  orderId             String   @id @default(uuid())
-  status              String
-  importerId          String
-  exporterId          String
-  user                User     @relation("UserOrders", fields: [importerId], references: [userId])
-  products            Product[] @relation("OrderProducts")
-  orderDetails        String?
-  totalPrice          Float
-  currencyCode        String
-  deliveryDate        DateTime?
-  quantityProduct     Int
+  orderId         String    @id @default(uuid())
+  status          String
+  importerId      String
+  exporterId      String
+  importer        User      @relation("UserOrders", fields: [importerId], references: [userId])
+  products        Product[] @relation("OrderProducts")
+  orderDetails    String?   @db.Text
+  totalPrice      Float
+  currencyCode    String
+  deliveryDate    DateTime?
+  quantityProduct Int
+  createdAt       DateTime  @default(now())
+
+  @@index([importerId])
+  @@index([exporterId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model Product {
-  productId           String   @id @default(uuid())
-  name                String
-  description         String?
-  price               Float
-  currencyCode        String
-  images              String[]
-  categoryId          String
-  userId              String
-  user                User     @relation("UserProducts", fields: [userId], references: [userId])
-  approvedBy          String?
-  certifications      Certification[] @relation("ProductCertifications")
-  orders              Order[]          @relation("OrderProducts")
-  categories          Category[]       @relation("CategoryProducts")
+  productId      String          @id @default(uuid())
+  name           String
+  description    String?         @db.Text
+  price          Float
+  currencyCode   String
+  categoryId     String?
+  userId         String
+  createdBy      User            @relation("UserProducts", fields: [userId], references: [userId])
+  approvedById   String?
+  approvedBy     User?           @relation("ApprovedProducts", fields: [approvedById], references: [userId])
+  certifications Certification[] @relation("ProductCertifications")
+  orders         Order[]         @relation("OrderProducts")
+  categories     Category[]      @relation("CategoryProducts")
+  posts          Post[]
+  images         ProductImage[]  @relation("ProductImages")
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([price])
+  @@index([approvedById])
+}
+
+model ProductImage {
+  id        String  @id @default(uuid())
+  url       String
+  productId String
+  product   Product @relation("ProductImages", fields: [productId], references: [productId])
+
+  @@index([productId])
 }
 
 model Message {
-  messageId           String   @id @default(uuid())
-  senderId            String
-  receiverId          String
-  content             String
-  messageType         String
-  sender              User     @relation("SentMessages", fields: [senderId], references: [userId])
-  receiver            User     @relation("ReceivedMessages", fields: [receiverId], references: [userId])
+  messageId   String      @id @default(uuid())
+  senderId    String
+  receiverId  String
+  content     String      @db.Text
+  messageType MessageType
+  createdAt   DateTime    @default(now())
+  sender      User        @relation("SentMessages", fields: [senderId], references: [userId])
+  receiver    User        @relation("ReceivedMessages", fields: [receiverId], references: [userId])
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
 }
 
 model Category {
-  categoryId          String   @id @default(uuid())
-  name                String
-  description         String?
-  userId              String
-  user                User     @relation("UserCategories", fields: [userId], references: [userId])
-  products            Product[] @relation("CategoryProducts")
+  categoryId  String    @id @default(uuid())
+  name        String
+  description String?   @db.Text
+  userId      String
+  user        User      @relation("UserCategories", fields: [userId], references: [userId])
+  products    Product[] @relation("CategoryProducts")
+
+  @@index([userId])
+  @@index([name])
+}
+
+enum RoleEnum {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum TypeEnum {
+  EXPORTER
+  IMPORTER
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VIDEO
 }
