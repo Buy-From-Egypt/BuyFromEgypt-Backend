@@ -22,7 +22,11 @@ export class AuthService {
 
     if (existingUser) {
       throw new UnauthorizedException(
-        existingUser.email === registerDto.email ? 'Email is already registered' : existingUser.phoneNumber === registerDto.phoneNumber ? 'Phone number is already registered' : 'Tax ID is already registered'
+        existingUser.email === registerDto.email
+          ? 'Email is already registered'
+          : existingUser.phoneNumber === registerDto.phoneNumber
+            ? 'Phone number is already registered'
+            : 'Tax ID is already registered'
       );
     }
 
@@ -32,6 +36,7 @@ export class AuthService {
       data: {
         ...registerDto,
         password: hashedPassword,
+        role: 'USER',
       },
     });
 

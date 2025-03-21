@@ -1,7 +1,11 @@
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, MinLength, ValidateIf } from 'class-validator';
-import { TypeEnum } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { optionalRequire } from '@nestjs/core/helpers/optional-require';
+
+export enum UserType {
+  IMPORTER = 'IMPORTER',
+  EXPORTER = 'EXPORTER',
+}
 
 export class RegisterDto {
   @ApiProperty({ example: 'John Doe', description: 'Full name of the user' })
@@ -21,10 +25,10 @@ export class RegisterDto {
   @IsPhoneNumber(undefined, { message: 'Invalid phone number format' })
   phoneNumber: string;
 
-  @ApiProperty({ enum: TypeEnum, example: TypeEnum.IMPORTER, description: 'Type of the user (IMPORTER or EXPORTER)' })
+  @ApiProperty({ enum: UserType, example: UserType.IMPORTER, description: 'Type of the user (IMPORTER or EXPORTER)' })
   @IsNotEmpty({ message: 'Type is required' })
-  @IsEnum(TypeEnum, { message: 'Type must be either IMPORTER or EXPORTER' })
-  type: TypeEnum;
+  @IsEnum(UserType, { message: 'Type must be either IMPORTER or EXPORTER' })
+  type: UserType;
 
   @ApiProperty({ example: '123456789', description: 'Tax ID for business verification' })
   @IsNotEmpty({ message: 'Tax ID is required for business verification' })
@@ -43,14 +47,13 @@ export class RegisterDto {
   commercial: string;
 
   @ApiPropertyOptional({ example: '12345678901234', description: 'National ID for exporters' })
-  @ValidateIf((obj) => obj.type === TypeEnum.EXPORTER)
+  @ValidateIf((obj) => obj.type === UserType.EXPORTER)
   @IsNotEmpty({ message: 'National ID is required for exporters' })
-  nationalId?: string;
+  nationalId: string;
 
   @ApiPropertyOptional({ example: 'Egypt', description: 'Country for importers' })
   @IsNotEmpty({ message: 'Country is required for importers' })
   country: string;
-
 
   @ApiProperty({ example: '123 Main St, Cairo, Egypt', description: 'Address of the user' })
   @IsNotEmpty({ message: 'Address is required' })
