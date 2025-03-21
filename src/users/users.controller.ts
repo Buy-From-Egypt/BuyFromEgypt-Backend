@@ -12,7 +12,7 @@ export class UsersController {
   @Post()
   create(@Body() data:any) {
     console.log(data);
-    return this.usersService.create(data);
+    // return this.usersService.create(data);
   }
 
   @Get()
