@@ -13,12 +13,12 @@ model User {
   email              String          @unique
   password           String
   phoneNumber        String          @unique
-  nationalId         String          @unique
+  nationalId         String?         @unique
   country            String
   taxId              String          @unique
   role               RoleEnum        @default(USER)
   type               TypeEnum
-  active             Boolean         @default(true)
+  active             Boolean         @default(false)
   profileImage       String?
   registrationNumber String?
   industrial         String?
