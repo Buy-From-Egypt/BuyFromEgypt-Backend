@@ -27,7 +27,7 @@ export class ProductsService {
   }
 
   findOne(id: string) {
-    return this.prisma.product.findUnique({ where: { productId: id } });
+    return this.prisma.product.findUnique({ where: { id } });
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
@@ -44,12 +44,12 @@ export class ProductsService {
         : undefined,
     };
     return this.prisma.product.update({
-      where: { productId: id },
+      where: { id },
       data,
     });
   }
 
   remove(id: string) {
-    return this.prisma.product.delete({ where: { productId: id } });
+    return this.prisma.product.delete({ where: { id } });
   }
 }
