@@ -70,9 +70,6 @@ model Post {
   likes      PostLike[] @relation("PostLikes")
 
   @@index([userId])
-  @@index([status])
-  @@index([productId])
-  @@index([approvedBy])
 }
 
 model PostLike {
