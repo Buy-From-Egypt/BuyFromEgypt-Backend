@@ -10,7 +10,7 @@ export class CommentsService {
     return this.prisma.comment.create({
       data: {
         ...createCommentDto,
-        content: createCommentDto.content
+        content: createCommentDto.content,
       },
     });
   }
@@ -30,6 +30,19 @@ export class CommentsService {
       throw new NotFoundException(`Comment with ID ${id} not found`);
     }
     return comment;
+  }
+
+  async update(id: string, updateCommentDto: any) {
+    const comment = await this.prisma.comment.findUnique({
+      where: { id },
+    });
+    if (!comment) {
+      throw new NotFoundException(`Comment with ID ${id} not found`);
+    }
+    return this.prisma.comment.update({
+      where: { id },
+      data: updateCommentDto,
+    });
   }
 
   async remove(id: string) {

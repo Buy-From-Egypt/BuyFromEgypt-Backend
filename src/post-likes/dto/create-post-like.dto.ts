@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsIn } from 'class-validator';
+import { IsNotEmpty, IsString, IsIn, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePostLikeDto {
@@ -12,9 +12,14 @@ export class CreatePostLikeDto {
   @IsString({ message: 'User ID must be a string' })
   userId: string;
 
-  @ApiProperty({ example: 'add', description: 'Action to perform: add or remove' })
+  @ApiProperty({ example: 'add', description: 'Action to perform: add, remove, or update' })
   @IsNotEmpty({ message: 'Action is required' })
-  @IsIn(['add', 'remove'], { message: 'Action must be either "add" or "remove"' })
+  @IsIn(['add', 'remove', 'update'], { message: 'Action must be either "add", "remove", or "update"' })
   @IsString({ message: 'Action must be a string' })
-  action: 'add' | 'remove';
+  action: 'add' | 'remove' | 'update';
+
+  @ApiProperty({ example: 'LIKE', description: 'Type of the reaction (LIKE, LOVE, HAHA, etc.)' })
+  @IsOptional()
+  @IsString({ message: 'Reaction type must be a string' })
+  reactionType?: string;
 }
