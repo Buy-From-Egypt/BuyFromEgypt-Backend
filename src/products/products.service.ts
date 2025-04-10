@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -49,7 +49,26 @@ export class ProductsService {
     });
   }
 
-  remove(id: string) {
-    return this.prisma.product.delete({ where: { id } });
+  async remove(id: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: id.toString() },
+    });
+    if (!product) {
+      throw new NotFoundException(`product with ID ${id} not found`);
+    }
+    try {
+      await this.prisma.productImage.deleteMany({
+        where: { productId: id.toString() },
+      });
+      await this.prisma.product.delete({
+        where: { id: id.toString() },
+      });
+      return { message: 'Product deleted successfully' };
+    } catch (error) {
+      if (error.code === 'P2003') {
+        throw new BadRequestException('Cannot delete product due to existing references.');
+      }
+      throw error;
+    }
   }
 }

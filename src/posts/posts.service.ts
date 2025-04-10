@@ -76,14 +76,11 @@ export class PostsService {
       await this.prisma.product.deleteMany({
         where: { posts: { some: { id: id.toString() } } },
       });
-
-      // Delete the post
       return this.prisma.post.delete({
         where: { id: id.toString() },
       });
     } catch (error) {
       if (error.code === 'P2003') {
-        // Prisma error code for foreign key constraint failure
         throw new BadRequestException('Cannot delete post due to existing references.');
       }
       throw error;
