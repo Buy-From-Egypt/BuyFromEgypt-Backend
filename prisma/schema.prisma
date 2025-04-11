@@ -58,16 +58,16 @@ model Follower {
 }
 
 model Post {
-  id        String    @id @default(uuid())
+  id        String      @id @default(uuid())
   title     String
   content   String
   status    String
-  createdAt DateTime  @default(now())
+  createdAt DateTime    @default(now())
   userId    String
-  user      User      @relation("UserPosts", fields: [userId], references: [userId])
+  user      User        @relation("UserPosts", fields: [userId], references: [userId])
   comments  Comment[]
   likes     PostLike[]
-  products  Product[] @relation("PostProducts")
+  products  Product[]   @relation("PostProducts")
   images    PostImage[] @relation("PostImages")
 
   @@index([userId])
@@ -91,7 +91,7 @@ model PostLike {
 model Comment {
   id        String   @id @default(uuid())
   postId    String
-  userId    String   // Ensure userId is present to associate the comment with the user
+  userId    String
   content   String
   createdAt DateTime @default(now())
 
@@ -141,21 +141,21 @@ model Order {
 }
 
 model Product {
-  id            String          @id @default(uuid())
-  name          String
-  description   String?         @db.Text
-  price         Float
-  currencyCode  String
-  categoryId    String?
-  userId        String
-  createdBy     User            @relation("UserProducts", fields: [userId], references: [userId])
-  approvedById  String?
-  approvedBy    User?           @relation("ApprovedProducts", fields: [approvedById], references: [userId])
+  id             String          @id @default(uuid())
+  name           String
+  description    String?         @db.Text
+  price          Float
+  currencyCode   String
+  categoryId     String?
+  userId         String
+  createdBy      User            @relation("UserProducts", fields: [userId], references: [userId])
+  approvedById   String?
+  approvedBy     User?           @relation("ApprovedProducts", fields: [approvedById], references: [userId])
   certifications Certification[] @relation("ProductCertifications")
-  orders        Order[]         @relation("OrderProducts")
-  categories    Category[]      @relation("CategoryProducts")
-  posts         Post[]          @relation("PostProducts")
-  images        ProductImage[]  @relation("ProductImages")
+  orders         Order[]         @relation("OrderProducts")
+  categories     Category[]      @relation("CategoryProducts")
+  posts          Post[]          @relation("PostProducts")
+  images         ProductImage[]  @relation("ProductImages")
 
   @@index([userId])
   @@index([categoryId])
@@ -173,10 +173,10 @@ model ProductImage {
 }
 
 model PostImage {
-  id        String  @id @default(uuid())
-  url       String
-  postId    String
-  post      Post    @relation("PostImages", fields: [postId], references: [id])
+  id     String @id @default(uuid())
+  url    String
+  postId String
+  post   Post   @relation("PostImages", fields: [postId], references: [id])
 
   @@index([postId])
 }

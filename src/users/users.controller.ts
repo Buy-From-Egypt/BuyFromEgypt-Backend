@@ -2,33 +2,35 @@ import { Controller, Get, Post, Body, Put, UseGuards, Req, Param, Delete } from 
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ApiBody } from '@nestjs/swagger';
-import { UpdateUserDto } from './dto/update-userForAdmin.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
-import { RoleEnum, User } from '@prisma/client';
+import { RoleEnum } from '@prisma/client';
 import { Request } from 'express';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
-import { UpdateUserForAdminDto } from './dto/update-user.dto';
+import { UpdateUserForAdminDto } from './dto/update-userForAdmin.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Get()
-  findAll() {
+  @Get('admin')
+  @Roles(`${RoleEnum.ADMIN}`)
+  @UseGuards(AuthGuard, RolesGuard)
+  async findAll() {
     return this.usersService.findAll();
   }
 
   @ApiBody({ type: CreateUserDto })
-  @Post()
+  @Post('admin')
   create(@Body() data: CreateUserDto) {
-    console.log(data);
     return this.usersService.createUser(data);
   }
 
   @Put('profile')
   @UseGuards(AuthGuard)
   async updateUser(@Req() req: Request & { user: { userId: string } }, @Body() updateUserDto: UpdateUserDto) {
+    console.log(req.user.userId);
     return this.usersService.updateUser(req.user.userId, updateUserDto);
   }
 
@@ -40,9 +42,25 @@ export class UsersController {
   }
 
   @Delete('admin/:id')
-  @UseGuards(AuthGuard)
   @Roles(`${RoleEnum.ADMIN}`)
+  @UseGuards(AuthGuard, RolesGuard)
   async delete(@Param('id') userId: string) {
     return this.usersService.deleteUser(userId);
   }
+
+  @Put('admin/approveUser/:id')
+  @Roles(RoleEnum.ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
+  async approveUser(@Param('id') userId: string) {
+    return this.usersService.toggleUserState(userId, 'approve');
+  }
+
+  @Put('admin/deactivateUser/:id')
+  @Roles(RoleEnum.ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
+  async deactivateUser(@Param('id') userId: string) {
+    return this.usersService.toggleUserState(userId, 'deactivate');
+  }
+
+
 }

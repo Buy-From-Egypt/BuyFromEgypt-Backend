@@ -18,6 +18,7 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
+  @ApiBody({ type: LoginDto })
   @Post('login')
   async login(@Body() loginDto: LoginDto): Promise<{ user: User; token: string }> {
     return this.authService.login(loginDto);
