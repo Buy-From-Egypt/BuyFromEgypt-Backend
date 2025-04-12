@@ -14,12 +14,9 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
       exceptionFactory: (errors) => {
-        const errorMessage = errors[0]?.constraints ? Object.values(errors[0].constraints)[0] : 'Validation failed';
-        return new BadRequestException({
-          statusCode: 400,
-          error: 'Bad Request',
-          message: errorMessage,
-        });
+        // const errorMessage = errors[0]?.constraints ? Object.values(errors[0].constraints)[0] : 'Validation failed';
+        const errorMessage = errors.map((err) => Object.values(err.constraints || {}).join(', ')).join(', ') || 'Validation failed';
+        return new BadRequestException(`${errorMessage}`);
       },
     })
   );

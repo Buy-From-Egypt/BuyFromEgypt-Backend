@@ -3,12 +3,12 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ApiBody } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/guards/auth.guard';
-import { RoleEnum } from '@prisma/client';
 import { Request } from 'express';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { UpdateUserForAdminDto } from './dto/update-userForAdmin.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { RoleEnum } from '@prisma/client';
 
 @Controller('users')
 export class UsersController {

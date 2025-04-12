@@ -1,25 +1,26 @@
-import { IsNotEmpty, IsOptional, IsString, IsNumber, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsNotEmpty, IsOptional, IsString, IsNumber, ValidateNested, IsBoolean } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 import { ProductImage } from '../entities/productImage.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateProductDto {
-  @ApiProperty({ example: 'Product Name', description: 'Name of the product' })
+  @ApiProperty({ example: 'Premium Laptop' })
   @IsNotEmpty({ message: 'Product name is required' })
   @IsString()
   name: string;
 
-  @ApiProperty({ example: 'Product Description', description: 'Description of the product' })
-  @IsOptional({ message: 'Product description is optional' })
+  @ApiPropertyOptional({ example: 'High-performance laptop' })
+  @IsOptional()
   @IsString()
   description?: string;
 
-  @ApiProperty({ example: 100, description: 'Price of the product' })
+  @ApiProperty({ example: 1299.99 })
   @IsNotEmpty({ message: 'Product price is required' })
   @IsNumber()
+  @Transform(({ value }) => parseFloat(value))
   price: number;
 
-  @ApiProperty({ example: 'EGP', description: 'Currency code of the product price' })
+  @ApiProperty({ example: 'EGP' })
   @IsNotEmpty({ message: 'Currency code is required' })
   @IsString()
   currencyCode: string;
@@ -29,10 +30,10 @@ export class CreateProductDto {
   @IsString()
   categoryId?: string;
 
-  @ApiProperty({ example: 'User ID', description: 'ID of the user creating the product' })
-  @IsNotEmpty({ message: 'User ID is required' })
-  @IsString()
-  userId: string;
+  @ApiProperty({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  available?: boolean;
 
   @ApiProperty({ type: [ProductImage], description: 'List of product images' })
   @IsOptional({ message: 'Product images are optional' })
