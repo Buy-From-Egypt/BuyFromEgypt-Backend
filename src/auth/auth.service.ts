@@ -54,7 +54,7 @@ export class AuthService {
 
     if (!user.active) throw new UnauthorizedException("Account under review. You'll be notified upon verification.");
 
-    const payload = { sub: user.userId, email: user.email };
+    const payload = { userId: user.userId, email: user.email, active: user.active, role: user.role, type: user.type };
 
     const token = await this.jwtService.signAsync(payload);
 
