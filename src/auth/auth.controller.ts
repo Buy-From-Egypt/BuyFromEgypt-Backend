@@ -12,7 +12,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('register')
   @ApiBody({ type: RegisterDto })
-  @ApiResponse({ status: HttpStatus.OK, description: 'User successfully registered' })
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'Your account has been registered successfully and is currently under review. You will be notified once the verification process is complete.' })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'User already exists' })
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
@@ -20,6 +20,8 @@ export class AuthController {
 
   @ApiBody({ type: LoginDto })
   @Post('login')
+  @ApiResponse({ status: HttpStatus.OK, description: 'User successfully logged in' })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Invalid data' })
   async login(@Body() loginDto: LoginDto): Promise<{ user: User; token: string }> {
     return this.authService.login(loginDto);
   }

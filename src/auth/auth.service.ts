@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { RegisterDto } from './dtos/Register.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -21,11 +21,7 @@ export class AuthService {
 
     if (existingUser) {
       throw new UnauthorizedException(
-        existingUser.email === registerDto.email
-          ? 'Email is already registered'
-          : existingUser.phoneNumber === registerDto.phoneNumber
-            ? 'Phone number is already registered'
-            : 'Tax ID is already registered'
+        existingUser.email === registerDto.email || existingUser.phoneNumber === registerDto.phoneNumber ? 'Email Or Phone number is already exists' : 'Tax ID is already exists'
       );
     }
 
@@ -50,9 +46,9 @@ export class AuthService {
 
     if (!user) throw new UnauthorizedException('The email address is not registered.');
     const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
-    if (!isPasswordValid) throw new UnauthorizedException('The password you entered is incorrect.');
+    if (!isPasswordValid) throw new UnauthorizedException('The Email Or Password you entered is incorrect.');
 
-    if (!user.active) throw new UnauthorizedException("Account under review. You'll be notified upon verification.");
+    if (!user.active) throw new ForbiddenException("Account under review. You'll be notified upon verification.");
 
     const payload = { userId: user.userId, email: user.email, active: user.active, role: user.role, type: user.type };
 
