@@ -13,7 +13,7 @@ import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @UserType(`${TypeEnum.IMPORTER}`)
+  @UserType(`${TypeEnum.EXPORTER}`)
   @UseGuards(AuthGuard, UserTypeGuard)
   @Post()
   @UseInterceptors(FilesInterceptor('images', 10))
@@ -31,10 +31,16 @@ export class ProductsController {
     return this.productsService.findProductById(id);
   }
 
-  // @Put(':id')
-  // update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-  //   return this.productsService.update(id, updateProductDto);
-  // }
+
+
+
+  @UserType(`${TypeEnum.EXPORTER}`)
+  @UseGuards(AuthGuard, UserTypeGuard)
+  @Put(':id')
+  @UseInterceptors(FilesInterceptor('images', 10))
+  update(@UploadedFiles() files:Express.Multer.File[], @Req() req:Request & { user: { userId: string } }, @Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+    return this.productsService.updateProduct(id,req.user.userId, updateProductDto,files);
+  }
 
   // @Delete(':id')
   // async remove(@Param('id') id: string) {
