@@ -4,7 +4,7 @@ import { User } from '../../users/entities/user.entity';
 export class Product {
   productId: string;
   name: string;
-  slug?: string;
+  slug: string;
   description?: string | null;
   price: number;
   currencyCode: string;
@@ -13,12 +13,13 @@ export class Product {
   reviewCount: number;
   owner?: User;
   // category?: Category;
-  // approvedBy?: User;
-  // approvedAt?: Date;
+  approvedBy?: User;
+  approvedAt?: Date | null;
   // certifications: Certification[];
   // orders: Order[];
   // posts: Post[];
   images?: ProductImage[];
+  cloudFolder?: string | null
   createdAt: Date;
   updatedAt: Date;
 }
