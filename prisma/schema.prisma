@@ -151,13 +151,14 @@ model Product {
   available      Boolean         @default(true)
   rating         Float?          @default(0.0)
   reviewCount    Int             @default(0)
+  cloudFolder    String
   ownerId        String
   owner          User            @relation("UserProducts", fields: [ownerId], references: [userId])
-  categoryId     String?
-  category       Category?       @relation("CategoryProducts", fields: [categoryId], references: [categoryId])
+  categoryId     String
+  category       Category        @relation("CategoryProducts", fields: [categoryId], references: [categoryId])
   approvedById   String?
   approvedBy     User?           @relation("ApprovedProducts", fields: [approvedById], references: [userId])
-  approvedAt     DateTime
+  approvedAt     DateTime?
   certifications Certification[] @relation("ProductCertifications")
   orders         Order[]         @relation("OrderProducts")
   posts          Post[]          @relation("PostProducts")
@@ -215,6 +216,8 @@ model Category {
   userId      String
   user        User      @relation("UserCategories", fields: [userId], references: [userId])
   products    Product[] @relation("CategoryProducts")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([userId])
   @@index([name])
