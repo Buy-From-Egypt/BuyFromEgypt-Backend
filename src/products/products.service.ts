@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -110,7 +110,7 @@ export class ProductsService {
         images: {
           create: uploadedImages?.map((img, index) => ({
             url: img.url,
-            id: img.publicId,
+            id: img.id,
             isPrimary: index === 0 && product.images.length === 0,
           })),
         },
