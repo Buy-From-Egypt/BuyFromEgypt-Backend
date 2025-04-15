@@ -16,14 +16,33 @@ export class ProductsService {
     private cloudinaryService: CloudinaryService
   ) {}
 
-  async findAll() {
-    return this.prisma.product.findMany({ include: { owner: true } });
+  async findAll(): Promise<Product[]> {
+    const products = await this.prisma.product.findMany({
+      include: {
+        owner: true,
+        category: {
+          include: { user: true },
+        },
+        images: true,
+      },
+    });
+    if (!products) throw new NotFoundException(`No products found.`);
+    return products.map((product) => ({
+      ...product,
+      category: product.category || undefined,
+    }));
   }
 
   async createProduct(userId: string, createProductDto: CreateProductDto, files: Express.Multer.File[]): Promise<Product> {
     //do check category
     const user = await this.prisma.user.findFirst({ where: { userId } });
     if (!user) throw new NotFoundException(`User with this ID not found.`);
+
+    const categoryId = createProductDto.categoryId;
+
+    const category = await this.prisma.category.findFirst({ where: { categoryId } });
+    if (!category) throw new ConflictException(`Category ${categoryId} not found`);
+
     const slug = slugify(createProductDto.name);
     const existedProduct = await this.prisma.product.findFirst({ where: { slug } });
     if (existedProduct) throw new ConflictException(`A product with the name "${createProductDto.name}" already exists.`);
@@ -48,31 +67,61 @@ export class ProductsService {
             })),
           },
         },
-        include: { owner: true, images: true },
+        include: {
+          owner: true,
+          images: true,
+          category: {
+            include: { user: true },
+          },
+        },
       })
       .catch(async (err) => {
         if (cloudFolder) await this.cloudinaryService.deleteFolder(cloudFolder);
         throw err;
       });
 
-    return newProduct;
+    return {
+      ...newProduct,
+      category: newProduct.category || undefined,
+    };
   }
 
-  async findProductById(productId: string) {
-    const product = this.prisma.product.findUnique({ where: { productId }, include: { owner: true, images: true } });
+  async findProductById(productId: string): Promise<Product> {
+    const product = await this.prisma.product.findUnique({
+      where: { productId },
+      include: {
+        owner: true,
+        images: true,
+        category: {
+          include: { user: true },
+        },
+      },
+    });
+
     if (!product) {
       throw new NotFoundException(`Product with ID ${productId} not found.`);
     }
-    return product;
+
+    return {
+      ...product,
+      category: product.category || undefined,
+    };
   }
 
   async updateProduct(productId: string, userId: string, updateProductDto: UpdateProductDto, files?: Express.Multer.File[]): Promise<Product> {
     const product = await this.prisma.product.findUnique({
       where: { productId },
-      include: { images: true, owner: true },
+      include: { images: true, owner: true, category: true },
     });
 
     if (!product) throw new NotFoundException(`Product with ID ${productId} not found!`);
+
+    const category = await this.prisma.category.findUnique({
+      where: { categoryId: updateProductDto.categoryId },
+    });
+    if (!category) {
+      throw new NotFoundException(`Category with ID ${updateProductDto.categoryId} not found`);
+    }
 
     if (product.ownerId !== userId) throw new ForbiddenException(`You don't have permission to update this product!`);
 
@@ -115,10 +164,20 @@ export class ProductsService {
           })),
         },
       },
-      include: { owner: true, images: true },
+      include: {
+        owner: true,
+        images: true,
+        category: {
+          include: { user: true },
+        },
+      },
     });
 
-    return updatedProduct;
+    // Ensure the category is undefined instead of null for compatibility with the Product type
+    return {
+      ...updatedProduct,
+      category: updatedProduct.category || undefined,
+    };
   }
 
   async toggleProductState(

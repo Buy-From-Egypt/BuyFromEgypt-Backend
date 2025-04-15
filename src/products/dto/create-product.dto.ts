@@ -25,10 +25,10 @@ export class CreateProductDto {
   @IsString()
   currencyCode: string;
 
-  @ApiProperty({ example: 'Category ID', description: 'ID of the product category' })
-  @IsOptional({ message: 'Category ID is optional' })
-  @IsString()
-  categoryId?: string;
+  @ApiProperty({ example: 'cat_123', })
+  @IsNotEmpty({ message: 'Category ID is required' })
+  @IsString({ message: 'Category ID must be a string' })
+  categoryId: string;
 
   @ApiProperty({ example: true })
   @IsOptional()

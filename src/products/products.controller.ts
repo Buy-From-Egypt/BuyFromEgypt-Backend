@@ -24,7 +24,7 @@ export class ProductsController {
   create(
     @UploadedFiles() files: Express.Multer.File[],
     @Req()
-    req: Request & {
+      req: Request & {
       user: { userId: string };
     },
     @Body() createProductDto: CreateProductDto
@@ -45,7 +45,7 @@ export class ProductsController {
   update(
     @UploadedFiles() files: Express.Multer.File[],
     @Req()
-    req: Request & {
+      req: Request & {
       user: { userId: string };
     },
     @Param('id') id: string,
@@ -73,7 +73,7 @@ export class ProductsController {
   @UseGuards(AuthGuard, RolesGuard)
   async toggleProductState(
     @Req()
-    req: Request & {
+      req: Request & {
       user: { userId: string };
     },
     @Param('id') productId: string,

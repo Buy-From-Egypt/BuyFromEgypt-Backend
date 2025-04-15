@@ -1,5 +1,6 @@
 import { ProductImage } from './productImage.entity';
 import { User } from '../../users/entities/user.entity';
+import { Category } from '../../categories/entities/category.entity';
 
 export class Product {
   productId: string;
@@ -12,7 +13,7 @@ export class Product {
   rating?: number | null;
   reviewCount: number;
   owner?: User;
-  // category?: Category;
+  category?: Category;
   approvedBy?: User;
   approvedAt?: Date | null;
   // certifications: Certification[];
