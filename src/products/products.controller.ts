@@ -42,10 +42,6 @@ export class ProductsController {
     return this.productsService.findProductById(id);
   }
 
-  @UserType(`${TypeEnum.EXPORTER}`)
-  @UseGuards(AuthGuard, UserTypeGuard)
-  @Put(':id')
-  @UseInterceptors(FilesInterceptor('images', 10))
   update(
     @UploadedFiles() files: Express.Multer.File[],
     @Req()
