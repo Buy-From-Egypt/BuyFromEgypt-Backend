@@ -199,7 +199,7 @@ export class ProductsService {
 
     await this.prisma.product.delete({ where: { productId } });
     return {
-      message: `User with ID ${productId} has been deleted successfully.`,
+      message: `Product with ID ${productId} has been deleted successfully.`,
     };
   }
 }

@@ -33,4 +33,14 @@ export class CloudinaryService {
       files.map(file => this.uploadImage(file, folder))
     );
   }
+
+  async deleteFolder(folder: string): Promise<void> {
+    await cloudinary.api.delete_resources_by_prefix(folder);
+    await cloudinary.api.delete_folder(folder);
+  }
+
+  async deleteImage(publicId:string): Promise<void> {
+    console.log(publicId);
+    await cloudinary.uploader.destroy(publicId);
+  }
 }
