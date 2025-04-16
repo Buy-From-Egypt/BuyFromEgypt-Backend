@@ -13,25 +13,20 @@ export class CloudinaryService {
 
   async uploadImage(file: Express.Multer.File, folder: string) {
     return new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        { folder },
-        (error, result) => {
-          if (error) return reject(error);
-          resolve({
-            url: result?.secure_url,
-            id: result?.public_id
-          });
-        }
-      );
+      const uploadStream = cloudinary.uploader.upload_stream({ folder }, (error, result) => {
+        if (error) return reject(error);
+        resolve({
+          url: result?.secure_url,
+          id: result?.public_id,
+        });
+      });
 
       uploadStream.end(file.buffer);
     });
   }
 
   async uploadImages(files: Express.Multer.File[], folder: string) {
-    return Promise.all(
-      files.map(file => this.uploadImage(file, folder))
-    );
+    return Promise.all(files.map((file) => this.uploadImage(file, folder)));
   }
 
   async deleteFolder(folder: string): Promise<void> {

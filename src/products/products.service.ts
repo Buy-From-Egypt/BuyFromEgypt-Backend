@@ -73,12 +73,12 @@ export class ProductsService {
         if (cloudFolder) await this.cloudinaryService.deleteFolder(cloudFolder);
         throw err;
       });
-
     return newProduct;
   }
 
   async findProductById(productId: string) {
     const product = this.prisma.product.findUnique({
+
       where: { productId },
       include: {
         owner: true,

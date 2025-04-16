@@ -10,10 +10,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll() {
-    return this.prisma.user.findMany();
-  }
-
   async createUser(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.prisma.user.findFirst({
       where: {
@@ -26,6 +22,10 @@ export class UsersService {
 
     const newUser = await this.prisma.user.create({ data: createUserDto });
     return newUser;
+  }
+
+  async findAll() {
+    return this.prisma.user.findMany();
   }
 
   async updateUser<T extends UpdateUserDto | UpdateUserForAdminDto>(userId: string, updateDto: T): Promise<User> {

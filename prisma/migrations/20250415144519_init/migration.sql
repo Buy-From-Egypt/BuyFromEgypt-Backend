@@ -113,22 +113,32 @@ CREATE TABLE "Order" (
 
 -- CreateTable
 CREATE TABLE "Product" (
-    "id" TEXT NOT NULL,
+    "productId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "slug" VARCHAR(255) NOT NULL,
     "description" TEXT,
     "price" DOUBLE PRECISION NOT NULL,
     "currencyCode" TEXT NOT NULL,
-    "categoryId" TEXT,
-    "userId" TEXT NOT NULL,
+    "active" BOOLEAN NOT NULL DEFAULT false,
+    "available" BOOLEAN NOT NULL DEFAULT true,
+    "rating" DOUBLE PRECISION DEFAULT 0.0,
+    "reviewCount" INTEGER NOT NULL DEFAULT 0,
+    "cloudFolder" TEXT,
+    "ownerId" TEXT NOT NULL,
+    "categoryId" TEXT NOT NULL,
     "approvedById" TEXT,
+    "approvedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Product_pkey" PRIMARY KEY ("productId")
 );
 
 -- CreateTable
 CREATE TABLE "ProductImage" (
     "id" TEXT NOT NULL,
     "url" TEXT NOT NULL,
+    "isPrimary" BOOLEAN NOT NULL DEFAULT false,
     "productId" TEXT NOT NULL,
 
     CONSTRAINT "ProductImage_pkey" PRIMARY KEY ("id")
@@ -161,6 +171,8 @@ CREATE TABLE "Category" (
     "name" TEXT NOT NULL,
     "description" TEXT,
     "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Category_pkey" PRIMARY KEY ("categoryId")
 );
@@ -187,14 +199,6 @@ CREATE TABLE "_OrderProducts" (
     "B" TEXT NOT NULL,
 
     CONSTRAINT "_OrderProducts_AB_pkey" PRIMARY KEY ("A","B")
-);
-
--- CreateTable
-CREATE TABLE "_CategoryProducts" (
-    "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL,
-
-    CONSTRAINT "_CategoryProducts_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateIndex
@@ -261,7 +265,10 @@ CREATE INDEX "Order_status_idx" ON "Order"("status");
 CREATE INDEX "Order_createdAt_idx" ON "Order"("createdAt");
 
 -- CreateIndex
-CREATE INDEX "Product_userId_idx" ON "Product"("userId");
+CREATE UNIQUE INDEX "Product_slug_key" ON "Product"("slug");
+
+-- CreateIndex
+CREATE INDEX "Product_ownerId_idx" ON "Product"("ownerId");
 
 -- CreateIndex
 CREATE INDEX "Product_categoryId_idx" ON "Product"("categoryId");
@@ -271,6 +278,15 @@ CREATE INDEX "Product_price_idx" ON "Product"("price");
 
 -- CreateIndex
 CREATE INDEX "Product_approvedById_idx" ON "Product"("approvedById");
+
+-- CreateIndex
+CREATE INDEX "Product_active_idx" ON "Product"("active");
+
+-- CreateIndex
+CREATE INDEX "Product_createdAt_idx" ON "Product"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "Product_slug_idx" ON "Product"("slug");
 
 -- CreateIndex
 CREATE INDEX "ProductImage_productId_idx" ON "ProductImage"("productId");
@@ -302,9 +318,6 @@ CREATE INDEX "_ProductCertifications_B_index" ON "_ProductCertifications"("B");
 -- CreateIndex
 CREATE INDEX "_OrderProducts_B_index" ON "_OrderProducts"("B");
 
--- CreateIndex
-CREATE INDEX "_CategoryProducts_B_index" ON "_CategoryProducts"("B");
-
 -- AddForeignKey
 ALTER TABLE "Follower" ADD CONSTRAINT "Follower_followerId_fkey" FOREIGN KEY ("followerId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -333,13 +346,16 @@ ALTER TABLE "Certification" ADD CONSTRAINT "Certification_userId_fkey" FOREIGN K
 ALTER TABLE "Order" ADD CONSTRAINT "Order_importerId_fkey" FOREIGN KEY ("importerId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Product" ADD CONSTRAINT "Product_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("categoryId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Product" ADD CONSTRAINT "Product_approvedById_fkey" FOREIGN KEY ("approvedById") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ProductImage" ADD CONSTRAINT "ProductImage_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ProductImage" ADD CONSTRAINT "ProductImage_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("productId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PostImage" ADD CONSTRAINT "PostImage_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -357,22 +373,16 @@ ALTER TABLE "Category" ADD CONSTRAINT "Category_userId_fkey" FOREIGN KEY ("userI
 ALTER TABLE "_PostProducts" ADD CONSTRAINT "_PostProducts_A_fkey" FOREIGN KEY ("A") REFERENCES "Post"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_PostProducts" ADD CONSTRAINT "_PostProducts_B_fkey" FOREIGN KEY ("B") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_PostProducts" ADD CONSTRAINT "_PostProducts_B_fkey" FOREIGN KEY ("B") REFERENCES "Product"("productId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_ProductCertifications" ADD CONSTRAINT "_ProductCertifications_A_fkey" FOREIGN KEY ("A") REFERENCES "Certification"("certificationId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_ProductCertifications" ADD CONSTRAINT "_ProductCertifications_B_fkey" FOREIGN KEY ("B") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_ProductCertifications" ADD CONSTRAINT "_ProductCertifications_B_fkey" FOREIGN KEY ("B") REFERENCES "Product"("productId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_OrderProducts" ADD CONSTRAINT "_OrderProducts_A_fkey" FOREIGN KEY ("A") REFERENCES "Order"("orderId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_OrderProducts" ADD CONSTRAINT "_OrderProducts_B_fkey" FOREIGN KEY ("B") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_CategoryProducts" ADD CONSTRAINT "_CategoryProducts_A_fkey" FOREIGN KEY ("A") REFERENCES "Category"("categoryId") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_CategoryProducts" ADD CONSTRAINT "_CategoryProducts_B_fkey" FOREIGN KEY ("B") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_OrderProducts" ADD CONSTRAINT "_OrderProducts_B_fkey" FOREIGN KEY ("B") REFERENCES "Product"("productId") ON DELETE CASCADE ON UPDATE CASCADE;
