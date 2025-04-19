@@ -10,7 +10,7 @@ import { RolesGuard } from './common/guards/roles.guard';
 import { ProductsModule } from './products/products.module';
 import { PostsModule } from './posts/posts.module';
 // import { CommentsModule } from './comments/comments.module';
-// import { PostLikesModule } from './post-likes/post-likes.module';
+import { PostLikesModule } from './post-likes/post-likes.module';
 import { CategoriesModule } from './categories/categories.module';
 
 @Module({
@@ -20,7 +20,8 @@ import { CategoriesModule } from './categories/categories.module';
     AuthModule,
     ProductsModule,
     PostsModule,
-    // CommentsModule, PostLikesModule
+    PostLikesModule
+    // CommentsModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

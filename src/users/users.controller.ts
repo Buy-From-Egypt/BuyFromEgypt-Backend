@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Put, UseGuards, Req, Param, Delete, HttpStatus } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ApiBody, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { Request } from 'express';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -9,10 +9,15 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { UpdateUserForAdminDto } from './dto/update-userForAdmin.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RoleEnum } from '@prisma/client';
+import { PostLikeResponseDto } from '../post-likes/dto/post-like-response.dto';
+import { PostLikesService } from '../post-likes/post-likes.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private postLikesService: PostLikesService
+  ) {}
 
   @Get('admin')
   @Roles(`${RoleEnum.ADMIN}`)
@@ -100,5 +105,18 @@ export class UsersController {
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Please Login and try again' })
   async deactivateUser(@Param('id') userId: string) {
     return this.usersService.toggleUserState(userId, 'deactivate');
+  }
+
+  @Get(':userId/likes')
+  @ApiOperation({ summary: 'Get all posts liked by a user' })
+  @ApiParam({ name: 'userId', description: 'ID of the user' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'List of posts liked by the user',
+    type: [PostLikeResponseDto],
+  })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found' })
+  async getUserLikes(@Param('userId') userId: string) {
+    return this.postLikesService.getUserLikes(userId);
   }
 }
