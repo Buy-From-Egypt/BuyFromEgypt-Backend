@@ -75,16 +75,15 @@ model Post {
 }
 
 model PostLike {
-  id           String       @id @default(uuid())
-  postId       String
-  userId       String
-  createdAt    DateTime     @default(now())
-  reactionType ReactionType @default(LIKE)
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
 
   post Post @relation(fields: [postId], references: [postId])
   user User @relation("UserLikes", fields: [userId], references: [userId])
 
-  @@unique([postId, userId])
+  @@unique([userId, postId])
   @@index([postId])
   @@index([userId])
 }
@@ -239,13 +238,4 @@ enum MessageType {
   TEXT
   IMAGE
   VIDEO
-}
-
-enum ReactionType {
-  LIKE
-  LOVE
-  HAHA
-  WOW
-  SAD
-  ANGRY
 }
