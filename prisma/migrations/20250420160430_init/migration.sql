@@ -7,9 +7,6 @@ CREATE TYPE "TypeEnum" AS ENUM ('EXPORTER', 'IMPORTER');
 -- CreateEnum
 CREATE TYPE "MessageType" AS ENUM ('TEXT', 'IMAGE', 'VIDEO');
 
--- CreateEnum
-CREATE TYPE "ReactionType" AS ENUM ('LIKE', 'LOVE', 'HAHA', 'WOW', 'SAD', 'ANGRY');
-
 -- CreateTable
 CREATE TABLE "User" (
     "userId" TEXT NOT NULL,
@@ -36,6 +33,18 @@ CREATE TABLE "User" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("userId")
+);
+
+-- CreateTable
+CREATE TABLE "Otp" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "otpCode" TEXT NOT NULL,
+    "identifier" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Otp_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -67,7 +76,6 @@ CREATE TABLE "PostLike" (
     "postId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "reactionType" "ReactionType" NOT NULL DEFAULT 'LIKE',
 
     CONSTRAINT "PostLike_pkey" PRIMARY KEY ("id")
 );
@@ -242,7 +250,7 @@ CREATE INDEX "PostLike_postId_idx" ON "PostLike"("postId");
 CREATE INDEX "PostLike_userId_idx" ON "PostLike"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "PostLike_postId_userId_key" ON "PostLike"("postId", "userId");
+CREATE UNIQUE INDEX "PostLike_userId_postId_key" ON "PostLike"("userId", "postId");
 
 -- CreateIndex
 CREATE INDEX "Comment_postId_idx" ON "Comment"("postId");
@@ -321,6 +329,9 @@ CREATE INDEX "_ProductCertifications_B_index" ON "_ProductCertifications"("B");
 
 -- CreateIndex
 CREATE INDEX "_OrderProducts_B_index" ON "_OrderProducts"("B");
+
+-- AddForeignKey
+ALTER TABLE "Otp" ADD CONSTRAINT "Otp_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Follower" ADD CONSTRAINT "Follower_followerId_fkey" FOREIGN KEY ("followerId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
