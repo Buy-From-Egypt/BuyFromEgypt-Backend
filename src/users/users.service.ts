@@ -5,7 +5,6 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateUserForAdminDto } from './dto/update-userForAdmin.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
-
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
@@ -53,17 +52,13 @@ export class UsersService {
 
     if (!user) throw new NotFoundException(`User with ID ${userId} not found.`);
 
-    const isActive = user.active;
-
-    if (state === 'approve' && isActive) throw new ConflictException(`User with ID ${userId} is already activated.`);
-
-    if (state === 'deactivate' && !isActive) throw new ConflictException(`User with ID ${userId} is already deactivated.`);
+    const isActive = !user.active;
 
     await this.prisma.user.update({
       where: { userId },
-      data: { active: state === 'approve' },
+      data: { active: isActive },
     });
 
-    return { message: `User with ID ${userId} has been ${state === 'approve' ? 'approved' : 'deactivated'} successfully.` };
+    return { message: `User with ID ${userId} has been ${isActive ? 'approved' : 'deactivated'} successfully.` };
   }
 }
