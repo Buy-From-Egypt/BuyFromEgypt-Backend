@@ -22,5 +22,6 @@ import { PostLikesModule } from './post-likes/post-likes.module';
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
+  //  , { provide: APP_GUARD, useClass: RolesGuard }],
 })
 export class AppModule {}
