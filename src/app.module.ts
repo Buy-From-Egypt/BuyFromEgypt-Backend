@@ -18,10 +18,11 @@ import { PostLikesModule } from './post-likes/post-likes.module';
     AuthModule,
     ProductsModule,
     PostsModule,
-    PostLikesModule
+    PostLikesModule,
     // CommentsModule,
   ],
   controllers: [AppController],
-  providers: [AppService, PrismaService, { provide: APP_GUARD, useClass: RolesGuard }],
+  providers: [AppService, PrismaService],
+  //  , { provide: APP_GUARD, useClass: RolesGuard }],
 })
 export class AppModule {}
