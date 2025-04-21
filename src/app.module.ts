@@ -5,10 +5,9 @@ import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { PrismaService } from '../prisma/prisma.service';
-import { APP_GUARD } from '@nestjs/core';
-import { RolesGuard } from './common/guards/roles.guard';
 import { ProductsModule } from './products/products.module';
 import { PostsModule } from './posts/posts.module';
+import { CommentsModule } from './comments/comments.module';
 import { PostLikesModule } from './post-likes/post-likes.module';
 
 @Module({
@@ -19,7 +18,7 @@ import { PostLikesModule } from './post-likes/post-likes.module';
     ProductsModule,
     PostsModule,
     PostLikesModule,
-    // CommentsModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
