@@ -1,5 +1,5 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
-import * as crypto from 'crypto';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+
 import { RegisterDto } from './dtos/Register.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
