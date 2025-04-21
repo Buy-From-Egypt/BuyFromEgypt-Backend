@@ -53,11 +53,17 @@ export class AuthService {
   async login(loginDto: LoginDto): Promise<{ user: User; token: string }> {
     const user = await this.prisma.user.findFirst({ where: { email: loginDto.email } });
 
-    if (!user) throw new UnauthorizedException('The email address is not registered.');
+    if (!user) {
+      throw new UnauthorizedException('The email address is not registered. Please sign up first.');
+    }
     const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
-    if (!isPasswordValid) throw new UnauthorizedException('The Email Or Password you entered is incorrect.');
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('The Email Or Password you entered is incorrect. Please try again.');
+    }
 
-    if (!user.active) throw new ForbiddenException("Account under review. You'll be notified upon verification.");
+    if (!user.active) {
+      throw new ForbiddenException("Account under review. You'll be notified upon verification.");
+    }
 
     const payload = { userId: user.userId, email: user.email, active: user.active, role: user.role, type: user.type };
 
