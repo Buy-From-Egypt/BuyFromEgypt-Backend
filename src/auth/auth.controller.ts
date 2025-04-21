@@ -63,6 +63,21 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
+  @Post('verify-otp-and-send-reset-link')
+  @ApiBody({ type: VerifyOtpDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'OTP verified successfully. Reset link sent.',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid or expired OTP',
+  })
+  async verifyOtpAndSendResetLink(@Body() verifyOtpDto: VerifyOtpDto): Promise<{ message: string }> {
+    return this.authService.verifyOtpAndSendResetLink(verifyOtpDto);
+  }
+
+  @HttpCode(HttpStatus.OK)
   @Post('reset-password')
   @ApiBody({ type: ResetPasswordDto })
   @ApiResponse({
@@ -71,7 +86,7 @@ export class AuthController {
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid OTP or password validation failed',
+    description: 'Invalid token or password validation failed',
   })
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<{ message: string }> {
     return this.authService.resetPassword(resetPasswordDto);

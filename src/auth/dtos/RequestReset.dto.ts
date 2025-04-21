@@ -1,9 +1,9 @@
+import { IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty } from 'class-validator';
 
 export class RequestResetDto {
-  @ApiProperty({ description: 'Identifier (email or phone) of the user' })
+  @ApiProperty({ description: 'Email or phone number of the user' })
+  @IsNotEmpty({ message: 'Identifier is required' })
   @IsString()
-  @IsNotEmpty()
   identifier: string;
 }

@@ -1,16 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class VerifyOtpDto {
-  @ApiProperty({ description: 'Identifier (email or phone) of the user' })
-  @ApiProperty({ description: 'OTP code sent to the user' })
-  @IsString({message: 'Identifier must be a string'})
-  @IsNotEmpty({message: 'Identifier is required'})
+  @ApiProperty({ description: 'Email or phone number of the user' })
+  @IsNotEmpty({ message: 'Identifier is required' })
+  @IsString()
   identifier: string;
 
   @ApiProperty({ description: 'OTP code sent to the user' })
-  @IsString({message: 'OTP code must be a string'})
-  @IsNotEmpty({message: 'OTP code is required'})
-  @IsString({message: 'OTP code must be at least 6 characters long'})
+  @IsNotEmpty({ message: 'OTP code is required' })
+  @IsString()
   otpCode: string;
 }
