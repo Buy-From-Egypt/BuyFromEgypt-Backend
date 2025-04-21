@@ -58,7 +58,6 @@ export class CreateUserDto {
   @IsNotEmpty({ message: 'Role is required' })
   @IsEnum(RoleEnum, { message: 'Role must be either ADMIN, USER, or MODERATOR' })
   role: RoleEnum;
-
   @ApiProperty({ example: true, description: 'Indicates whether the user is active or not' })
   @IsNotEmpty({ message: 'Active status is required' })
   active: boolean;

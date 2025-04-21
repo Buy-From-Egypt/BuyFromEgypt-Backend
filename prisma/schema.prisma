@@ -25,6 +25,9 @@ model User {
   industrySector     String?
   commercial         String?
   address            String?         @db.Text
+  otpCode            String?
+  otpMethod          String?         // Send OTP for Email or Phone
+  otpExpiry          DateTime?       // expiryDate for OTP
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
   posts              Post[]          @relation("UserPosts")
@@ -39,9 +42,20 @@ model User {
   followers          Follower[]      @relation("FollowedUsers")
   following          Follower[]      @relation("FollowingUsers")
   likedPosts         PostLike[]      @relation("UserLikes")
+  otps               Otp[]
 
   @@index([createdAt])
   @@index([role, active])
+}
+
+model Otp {
+  id           String   @id @default(uuid())
+  userId       String
+  otpCode      String
+  identifier   String
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [userId])
 }
 
 model Follower {
@@ -58,21 +72,20 @@ model Follower {
 }
 
 model Post {
-  postId     String     @id @default(uuid())
-  content    String     @db.Text
-  userId     String
-  approvedBy String?
-  status     String
-  createdBy  User       @relation("UserPosts", fields: [userId], references: [userId])
-  comments   Comment[]
-  productId  String
-  product    Product    @relation(fields: [productId], references: [productId])
-  likes      PostLike[] @relation("PostLikes")
+  postId      String      @id @default(uuid())
+  title       String
+  content     String
+  cloudFolder String
+  userId      String
+  user        User        @relation("UserPosts", fields: [userId], references: [userId])
+  comments    Comment[]
+  likes       PostLike[]
+  products    Product[]   @relation("PostProducts")
+  images      PostImage[] @relation("PostImages")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   @@index([userId])
-  @@index([status])
-  @@index([productId])
-  @@index([approvedBy])
 }
 
 model PostLike {
@@ -80,23 +93,27 @@ model PostLike {
   postId    String
   userId    String
   createdAt DateTime @default(now())
-  post      Post     @relation("PostLikes", fields: [postId], references: [postId])
-  user      User     @relation("UserLikes", fields: [userId], references: [userId])
 
-  @@unique([postId, userId])
+  post Post @relation(fields: [postId], references: [postId])
+  user User @relation("UserLikes", fields: [userId], references: [userId])
+
+  @@unique([userId, postId])
   @@index([postId])
   @@index([userId])
 }
 
 model Comment {
-  commentId   String @id @default(uuid())
-  commentText String @db.Text
-  postId      String
-  userId      String
-  post        Post   @relation(fields: [postId], references: [postId])
-  user        User   @relation("UserComments", fields: [userId], references: [userId])
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [postId])
+  user User @relation("UserComments", fields: [userId], references: [userId])
 
   @@index([postId])
+  @@index([userId])
 }
 
 model Certification {
@@ -140,33 +157,55 @@ model Order {
 model Product {
   productId      String          @id @default(uuid())
   name           String
+  slug           String          @unique @db.VarChar(255)
   description    String?         @db.Text
   price          Float
   currencyCode   String
-  categoryId     String?
-  userId         String
-  createdBy      User            @relation("UserProducts", fields: [userId], references: [userId])
+  active         Boolean         @default(false)
+  available      Boolean         @default(true)
+  rating         Float?          @default(0.0)
+  reviewCount    Int             @default(0)
+  cloudFolder    String
+  ownerId        String
+  owner          User            @relation("UserProducts", fields: [ownerId], references: [userId])
+  categoryId     String
+  category       Category        @relation("CategoryProducts", fields: [categoryId], references: [categoryId])
   approvedById   String?
   approvedBy     User?           @relation("ApprovedProducts", fields: [approvedById], references: [userId])
+  approvedAt     DateTime?
   certifications Certification[] @relation("ProductCertifications")
   orders         Order[]         @relation("OrderProducts")
-  categories     Category[]      @relation("CategoryProducts")
-  posts          Post[]
+  posts          Post[]          @relation("PostProducts")
   images         ProductImage[]  @relation("ProductImages")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
-  @@index([userId])
+  @@index([ownerId])
   @@index([categoryId])
   @@index([price])
   @@index([approvedById])
+  @@index([active])
+  @@index([createdAt])
+  @@index([slug])
 }
 
 model ProductImage {
   id        String  @id @default(uuid())
   url       String
+  isPrimary Boolean @default(false)
   productId String
   product   Product @relation("ProductImages", fields: [productId], references: [productId])
 
   @@index([productId])
+}
+
+model PostImage {
+  id     String @id @default(uuid())
+  url    String
+  postId String
+  post   Post   @relation("PostImages", fields: [postId], references: [postId])
+
+  @@index([postId])
 }
 
 model Message {
@@ -191,6 +230,8 @@ model Category {
   userId      String
   user        User      @relation("UserCategories", fields: [userId], references: [userId])
   products    Product[] @relation("CategoryProducts")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([userId])
   @@index([name])

@@ -1,20 +1,22 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, MinLength, ValidateIf } from 'class-validator';
-import { TypeEnum } from '@prisma/client';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, Matches, MinLength, ValidateIf } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { optionalRequire } from '@nestjs/core/helpers/optional-require';
+import { TypeEnum } from '@prisma/client';
 
 export class RegisterDto {
-  @ApiProperty({ example: 'John Doe', description: 'Full name of the user' })
+  @ApiProperty({ example: 'Username', description: 'Full name of the user' })
   @IsNotEmpty({ message: 'Name is required' })
   name: string;
 
-  @ApiProperty({ example: 'john.doe@example.com', description: 'Email address of the user' })
+  @ApiProperty({ example: 'aaa@example.com', description: 'Email address of the user' })
   @IsEmail({}, { message: 'Invalid email format' })
   email: string;
 
-  @ApiProperty({ example: 'password123', description: 'Password for the user account' })
+  @ApiProperty({ example: 'password/123', description: 'Password for the user account' })
   @IsNotEmpty({ message: 'Password is required' })
   @MinLength(6, { message: 'Password must be at least 6 characters long' })
+  @Matches(/^.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?].*$/, {
+    message: 'Password must contain at least one special character',
+  })
   password: string;
 
   @ApiProperty({ example: '+201234567890', description: 'Phone number of the user' })
@@ -45,12 +47,11 @@ export class RegisterDto {
   @ApiPropertyOptional({ example: '12345678901234', description: 'National ID for exporters' })
   @ValidateIf((obj) => obj.type === TypeEnum.EXPORTER)
   @IsNotEmpty({ message: 'National ID is required for exporters' })
-  nationalId?: string;
+  nationalId: string;
 
   @ApiPropertyOptional({ example: 'Egypt', description: 'Country for importers' })
   @IsNotEmpty({ message: 'Country is required for importers' })
   country: string;
-
 
   @ApiProperty({ example: '123 Main St, Cairo, Egypt', description: 'Address of the user' })
   @IsNotEmpty({ message: 'Address is required' })

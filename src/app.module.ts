@@ -9,7 +9,15 @@ import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './common/guards/roles.guard';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), UsersModule, AuthModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    UsersModule,
+    AuthModule,
+    ProductsModule,
+    PostsModule,
+    PostLikesModule
+    // CommentsModule,
+  ],
   controllers: [AppController],
   providers: [AppService, PrismaService, { provide: APP_GUARD, useClass: RolesGuard }],
 })
