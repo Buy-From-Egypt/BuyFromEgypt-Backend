@@ -7,6 +7,9 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaService } from '../prisma/prisma.service';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './common/guards/roles.guard';
+import { ProductsModule } from './products/products.module';
+import { PostsModule } from './posts/posts.module';
+import { PostLikesModule } from './post-likes/post-likes.module';
 
 @Module({
   imports: [

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 
 import { RegisterDto } from './dtos/Register.dto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -11,6 +11,7 @@ import { VerifyOtpDto } from './dtos/VerifyOTP.dto';
 import { ResetPasswordDto } from './dtos/ResetPassword.dto';
 import { MailService } from 'src/MailService/mail.service';
 import { MobileService } from 'src/MobileService/mobile.service';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
