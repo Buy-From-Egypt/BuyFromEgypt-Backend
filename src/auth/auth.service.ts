@@ -153,19 +153,18 @@ export class AuthService {
     if (!otpRecord) throw new UnauthorizedException('Invalid OTP.');
     if (new Date() > otpRecord.expiresAt) throw new UnauthorizedException('OTP has expired.');
 
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    const OTPGen = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-    // Update the OTP record with the new reset token
     await this.prisma.otp.update({
       where: { id: otpRecord.id },
       data: {
-        otpCode: resetToken,
+        otpCode: OTPGen,
         expiresAt: expiresAt,
       },
     });
 
-    const resetLink = ` http://localhost:${process.env.PORT ?? 3000}/reset-password?token=${resetToken}`;
+    const resetLink = ` http://localhost:${process.env.PORT ?? 3000}/reset-password?token=${OTPGen}`;
 
     if (identifier.includes('@')) {
       await this.mailService.sendResetLink(user.email, resetLink);
@@ -228,7 +227,6 @@ export class AuthService {
         where: { userId: user.userId },
         data: { password: hashedPassword },
       }),
-      // Delete the OTP after successful password reset
       this.prisma.otp.delete({
         where: { id: otpRecord.id },
       }),
