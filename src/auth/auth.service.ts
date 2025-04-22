@@ -152,7 +152,10 @@ export class AuthService {
     if (new Date() > otpRecord.expiresAt) throw new UnauthorizedException('OTP has expired.');
 
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&identifier=${encodeURIComponent(identifier)}`;
+
+    // Use the current server URL instead of the frontend URL
+    // This ensures the reset link points to the backend API endpoint
+    const resetLink = `${process.env.SERVER_URL || 'http://localhost:3000'}/auth/reset-password?token=${resetToken}&identifier=${encodeURIComponent(identifier)}`;
 
     await this.prisma.otp.update({
       where: { id: otpRecord.id },
