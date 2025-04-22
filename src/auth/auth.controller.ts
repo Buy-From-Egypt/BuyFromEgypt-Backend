@@ -63,7 +63,7 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @Post('verify-otp-and-send-reset-link')
+  @Post('verify-otp-link')
   @ApiBody({ type: VerifyOtpDto })
   @ApiResponse({
     status: HttpStatus.OK,
