@@ -9,6 +9,7 @@ import { ProductsModule } from './products/products.module';
 import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
 import { PostLikesModule } from './post-likes/post-likes.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { PostLikesModule } from './post-likes/post-likes.module';
     PostsModule,
     PostLikesModule,
     CommentsModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
