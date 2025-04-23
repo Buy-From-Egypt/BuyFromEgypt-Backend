@@ -10,18 +10,11 @@ import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
 import { PostLikesModule } from './post-likes/post-likes.module';
 import { CategoriesModule } from './categories/categories.module';
+import { FollowModule } from './follow/follow.module';
+import { ValidationModule } from './common/validation/validation.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    UsersModule,
-    AuthModule,
-    ProductsModule,
-    PostsModule,
-    PostLikesModule,
-    CommentsModule,
-    CategoriesModule,
-  ],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), UsersModule, AuthModule, ProductsModule, PostsModule, PostLikesModule, CommentsModule, CategoriesModule, FollowModule, ValidationModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
   //  , { provide: APP_GUARD, useClass: RolesGuard }],
