@@ -19,4 +19,8 @@ export class SendMessageDto {
   @IsUUID('all', { each: true })
   @ArrayMinSize(3)
   groupParticipantIds?: string[];
+
+  @IsOptional()
+  @IsString()
+  groupName?: string;
 }
