@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Test</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      #messages {
+        border: 1px solid #ccc;
+        padding: 10px;
+        height: 300px;
+        overflow-y: scroll;
+        margin-bottom: 10px;
+      }
+      #messages div {
+        margin-bottom: 5px;
+      }
+      input,
+      button {
+        padding: 8px;
+        margin: 5px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Chat Test</h1>
+    <div>
+      <label for="userId">Your User ID:</label>
+      <input type="text" id="userId" placeholder="Enter your user ID" />
+      <button onclick="connect()">Connect</button>
+      <div id="connectionStatus"></div>
+    </div>
+    <div>
+      <label for="conversationId">Conversation ID:</label>
+      <input type="text" id="conversationId" placeholder="Enter conversation ID" />
+      <button onclick="joinConversation()">Join Conversation</button>
+      <button onclick="leaveConversation()">Leave Conversation</button>
+    </div>
+    <div id="messages"></div>
+    <div>
+      <label for="participants">Participant IDs (comma separated):</label>
+      <input type="text" id="participants" placeholder="e.g. userA,userB,userC" />
+      <input type="text" id="messageContent" placeholder="Message" />
+      <button onclick="sendMessage()">Send Message</button>
+    </div>
+    <script>
+      let socket;
+      let currentConversation = null;
+
+      function connect() {
+        const userId = document.getElementById('userId').value.trim();
+        if (!userId) return alert('Please enter your User ID');
+        socket = io('http://localhost:3000', { query: { userId } });
+        socket.on('connect', () => {
+          document.getElementById('connectionStatus').innerText = 'Connected';
+        });
+        socket.on('disconnect', () => {
+          document.getElementById('connectionStatus').innerText = 'Disconnected';
+        });
+        socket.on('receiveMessage', (msg) => {
+          appendMessage(`From ${msg.senderId}: ${msg.content}`);
+        });
+        socket.on('messageStatusUpdated', (data) => {
+          appendMessage(`Status of ${data.messageId} → ${data.status}`);
+        });
+      }
+
+      function joinConversation() {
+        const cid = document.getElementById('conversationId').value.trim();
+        if (!socket) return alert('Connect first');
+        if (!cid) return alert('Enter a Conversation ID');
+        if (currentConversation) socket.emit('leaveConversation', currentConversation);
+        currentConversation = cid;
+        socket.emit('joinConversation', cid);
+        appendMessage(`Joined conversation ${cid}`);
+      }
+
+      function leaveConversation() {
+        if (!socket || !currentConversation) return;
+        socket.emit('leaveConversation', currentConversation);
+        appendMessage(`Left conversation ${currentConversation}`);
+        currentConversation = null;
+      }
+
+      function sendMessage() {
+        if (!socket) return alert('Connect first');
+        const senderId = document.getElementById('userId').value.trim();
+        const raw = document.getElementById('participants').value.trim();
+        const content = document.getElementById('messageContent').value.trim();
+        if (!raw) return alert('Enter participant ID(s)');
+        if (!content) return alert('Enter a message');
+        const parts = raw
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const isGroup = parts.length > 1;
+        const payload = { senderId, content, messageType: 'TEXT' };
+        if (isGroup) {
+          payload.groupParticipantIds = [senderId, ...parts];
+          payload.receiverId = parts[0];
+        } else {
+          payload.receiverId = parts[0];
+        }
+        socket.emit('sendMessage', payload);
+      }
+
+      function appendMessage(txt) {
+        const d = document.createElement('div');
+        d.innerText = txt;
+        const box = document.getElementById('messages');
+        box.appendChild(d);
+        box.scrollTop = box.scrollHeight;
+      }
+
+      window.addEventListener('beforeunload', () => {
+        if (socket && currentConversation) {
+          socket.emit('leaveConversation', currentConversation);
+        }
+      });
+    </script>
+  </body>
+</html>

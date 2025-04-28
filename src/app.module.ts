@@ -12,9 +12,22 @@ import { PostLikesModule } from './post-likes/post-likes.module';
 import { CategoriesModule } from './categories/categories.module';
 import { FollowModule } from './follow/follow.module';
 import { ValidationModule } from './common/validation/validation.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), UsersModule, AuthModule, ProductsModule, PostsModule, PostLikesModule, CommentsModule, CategoriesModule, FollowModule, ValidationModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    UsersModule,
+    AuthModule,
+    ProductsModule,
+    PostsModule,
+    PostLikesModule,
+    CommentsModule,
+    CategoriesModule,
+    FollowModule,
+    ValidationModule,
+    ChatModule,
+  ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
   //  , { provide: APP_GUARD, useClass: RolesGuard }],
