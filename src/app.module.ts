@@ -8,7 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ProductsModule } from './products/products.module';
 import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
-import { PostLikesModule } from './post-likes/post-likes.module';
+import { CommentLikesModule } from './comment-likes/comment-likes.module';
 import { CategoriesModule } from './categories/categories.module';
 import { FollowModule } from './follow/follow.module';
 import { ValidationModule } from './common/validation/validation.module';
@@ -21,7 +21,7 @@ import { ChatModule } from './chat/chat.module';
     AuthModule,
     ProductsModule,
     PostsModule,
-    PostLikesModule,
+    CommentLikesModule,
     CommentsModule,
     CategoriesModule,
     FollowModule,
