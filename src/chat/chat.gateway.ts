@@ -3,9 +3,13 @@ import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { SendMessageDto } from './dto/send-message.dto';
 import { UpdateMessageStatusDto } from './dto/update-message-status.dto';
-import { Logger } from '@nestjs/common';
+import { Logger, Injectable } from '@nestjs/common';
 
-@WebSocketGateway({ cors: { origin: '*', methods: ['GET', 'POST', 'PATCH'] } })
+@Injectable()
+@WebSocketGateway({
+  cors: { origin: '*', methods: ['GET', 'POST', 'PATCH'] },
+  namespace: '/chat',
+})
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   private server: Server;
@@ -16,7 +20,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   afterInit(server: Server) {
     this.server = server;
-    this.logger.log('WebSocket Gateway initialized');
+    this.logger.log('Chat WebSocket Gateway initialized');
   }
 
   async handleConnection(client: Socket) {
@@ -36,6 +40,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       await this.chatService.updateUserOnlineStatus(userId, true);
       this.broadcastUserStatus(userId, true);
     }
+
+    this.logger.log(`User connected: ${userId}, socket: ${client.id}`);
   }
 
   async handleDisconnect(client: Socket) {
@@ -52,6 +58,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     } else {
       this.userSocketMap.set(userId, updatedSockets);
     }
+
+    this.logger.log(`User disconnected: ${userId}, socket: ${client.id}`);
   }
 
   private broadcastUserStatus(userId: string, isOnline: boolean) {
@@ -74,46 +82,45 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('sendMessage')
   async handleSendMessage(@ConnectedSocket() client: Socket, @MessageBody() payload: SendMessageDto) {
-    const message = await this.chatService.createMessage(payload);
+    try {
+      const message = await this.chatService.createMessage(payload);
 
-    client.emit('messageSent', {
-      messageId: message.messageId,
-      conversationId: message.conversationId,
-      timestamp: message.createdAt,
-    });
-
-    const receiverSockets = this.userSocketMap.get(payload.receiverId) || [];
-    const isReceiverOnline = receiverSockets.length > 0;
-
-    if (isReceiverOnline) {
-      receiverSockets.forEach((socketId) => {
-        const socket = this.server.sockets.sockets.get(socketId);
-        if (socket) {
-          this.logger.log(`Sending message to receiver socket: ${socketId}, receiver: ${payload.receiverId}`);
-          socket.emit('receiveMessage', message);
-        }
+      client.emit('messageSent', {
+        messageId: message.messageId,
+        conversationId: message.conversationId,
+        timestamp: message.createdAt,
       });
 
-      const isPrivate = await this.chatService.isConversationPrivate(message.conversationId);
-      if (!isPrivate) {
-        this.server.to(message.conversationId).emit('receiveMessage', message); // send to all
+      const receiverSockets = this.userSocketMap.get(payload.receiverId) || [];
+      const isReceiverOnline = receiverSockets.length > 0;
+
+      if (isReceiverOnline) {
+        this.server.to(payload.receiverId).emit('receiveMessage', message);
+
+        const isPrivate = await this.chatService.isConversationPrivate(message.conversationId);
+        if (!isPrivate) {
+          this.server.to(message.conversationId).emit('receiveMessage', message);
+        }
+
+        const updatePayload: UpdateMessageStatusDto = {
+          messageId: message.messageId,
+          status: 'delivered',
+        };
+
+        await this.chatService.updateMessageStatus(updatePayload);
+
+        client.emit('messageStatusUpdated', {
+          messageId: message.messageId,
+          status: 'delivered',
+          conversationId: message.conversationId,
+        });
       }
 
-      const updatePayload: UpdateMessageStatusDto = {
-        messageId: message.messageId,
-        status: 'delivered',
-      };
-
-      await this.chatService.updateMessageStatus(updatePayload);
-
-      client.emit('messageStatusUpdated', {
-        messageId: message.messageId,
-        status: 'delivered',
-        conversationId: message.conversationId,
-      });
+      return { success: true, messageId: message.messageId };
+    } catch (error) {
+      this.logger.error(`Error sending message: ${error.message}`, error.stack);
+      return { success: false, error: error.message };
     }
-
-    return { success: true, messageId: message.messageId };
   }
 
   @SubscribeMessage('updateMessageStatus')
