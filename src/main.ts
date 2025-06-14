@@ -2,7 +2,7 @@ import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { PrismaExceptionFilter } from './common/filters/all-exceptions.filter';
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,17 +17,14 @@ async function bootstrap() {
         enableImplicitConversion: true,
       },
       exceptionFactory: (errors) => {
-        const messages = errors.map((error) => {
-          return {
-            field: error.property,
-            message: `${error.constraints ? Object.values(error.constraints).join(', ') : 'Invalid value'}`,
-          };
-        });
-        return {
+        const firstError = errors[0];
+        const message = firstError?.constraints ? Object.values(firstError.constraints)[0] : 'Invalid input';
+
+        return new BadRequestException({
           statusCode: 400,
           message: 'Validation failed',
-          errors: messages,
-        };
+          errors: message,
+        });
       },
     })
   );
