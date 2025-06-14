@@ -73,21 +73,3 @@ export class RatingService {
     };
   }
 }
-
-
-// async getRating(entityType: RateableEntity, entityId: string) {
-//   const field = entityType === 'post' ? 'postId' : 'productId';
-//
-//   const { _avg, _count } = await this.prisma.rating.aggregate({
-//     where: {
-//       [field]: entityId,
-//     } as any,
-//     _avg: { value: true },
-//     _count: true,
-//   });
-//
-//   return {
-//     average: _avg.value ?? 0,
-//     totalVotes: _count,
-//   };
-// }
