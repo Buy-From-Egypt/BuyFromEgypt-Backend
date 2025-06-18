@@ -152,7 +152,15 @@ export class ProductsService {
       throw new NotFoundException(`Product with ID ${productId} not found!`);
     }
 
-    if (product.ownerId !== userId) {
+    const user = await this.prisma.user.findUnique({
+      where: { userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found!`);
+    }
+
+    if (product.ownerId !== userId && user.role !== RoleEnum.ADMIN) {
       throw new ForbiddenException(`You don't have permission to update this product!`);
     }
     return product;
