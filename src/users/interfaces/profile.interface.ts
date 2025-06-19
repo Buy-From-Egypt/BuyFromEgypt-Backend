@@ -35,4 +35,7 @@ export type ProfileResponse = {
       isPrimary: boolean;
     }[];
   }[];
+  followersCount: number;
+  followingCount: number;
+  postsCount: number;
 };
