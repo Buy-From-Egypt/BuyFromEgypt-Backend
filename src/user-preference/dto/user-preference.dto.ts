@@ -22,6 +22,5 @@ export class UserPreferenceDto {
   receiveAlerts?: boolean;
 
   @IsNotEmpty()
-  @IsEmail()
-  email: string;
+  userId: string;
 }
