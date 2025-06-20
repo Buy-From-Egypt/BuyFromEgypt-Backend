@@ -172,6 +172,7 @@ export class UsersService {
             createdAt: 'desc',
           },
         },
+        categories: true,
         products: {
           select: {
             productId: true,
@@ -179,6 +180,8 @@ export class UsersService {
             price: true,
             currencyCode: true,
             images: true,
+            rating: true,
+            reviewCount: true,
           },
           take: 5,
           orderBy: {

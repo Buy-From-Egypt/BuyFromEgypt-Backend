@@ -24,11 +24,18 @@ export type ProfileResponse = {
       url: string;
     }[];
   }[];
+  categories: {
+    categoryId: string;
+    name: string;
+    description: string | null;
+  }[];
   products: {
     productId: string;
     name: string;
     price: number;
     currencyCode: string;
+    rating: number | null;
+    reviewCount: number;
     images: {
       id: string;
       url: string;
