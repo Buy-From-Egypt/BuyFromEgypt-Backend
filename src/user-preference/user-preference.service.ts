@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserPreferenceDto } from './dto/user-preference.dto';
 
@@ -6,11 +6,15 @@ import { UserPreferenceDto } from './dto/user-preference.dto';
 export class UserPreferenceService {
   constructor(private prisma: PrismaService) {}
 
-  async upsertPreference(userId: string, dto: UserPreferenceDto) {
+  async upsertPreference(dto: UserPreferenceDto) {
+    const user = await this.prisma.user.findFirst({ where: { email: dto.email }, select: { userId: true } });
+
+    if (!user) throw new NotFoundException('User not found');
+
     return this.prisma.userPreference.upsert({
-      where: { userId },
+      where: { userId: user.userId },
       update: { ...dto },
-      create: { userId, ...dto },
+      create: { userId: user.userId, ...dto },
     });
   }
 
