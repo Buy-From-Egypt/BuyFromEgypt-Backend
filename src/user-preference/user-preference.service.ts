@@ -7,14 +7,12 @@ export class UserPreferenceService {
   constructor(private prisma: PrismaService) {}
 
   async upsertPreference(dto: UserPreferenceDto) {
-    const user = await this.prisma.user.findFirst({ where: { email: dto.email }, select: { userId: true } });
-
-    if (!user) throw new NotFoundException('User not found');
+    const { userId, ...data } = dto;
 
     return this.prisma.userPreference.upsert({
-      where: { userId: user.userId },
-      update: { ...dto },
-      create: { userId: user.userId, ...dto },
+      where: { userId },
+      update: { ...data },
+      create: { userId, ...data },
     });
   }
 
