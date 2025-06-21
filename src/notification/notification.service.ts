@@ -46,7 +46,7 @@ export class NotificationService {
     });
   }
 
-  async getAllNotifications(userId: string) {
+  async getMyNotifications(userId: string) {
     await this.validationService.validateUserExists(userId);
 
     const notifications = await this.prisma.notification.findMany({
