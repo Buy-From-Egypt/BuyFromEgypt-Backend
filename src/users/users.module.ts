@@ -13,7 +13,7 @@ import { NotificationGateway } from '../notification/notification.gateway';
 @Module({
   imports: [AuthModule, ValidationModule, CloudinaryModule],
   controllers: [UsersController],
-  providers: [UsersService, PrismaService, CommentLikesService, MailService,NotificationService, NotificationGateway],
+  providers: [UsersService, PrismaService, CommentLikesService, MailService, NotificationService, NotificationGateway],
   exports: [UsersService],
 })
 export class UsersModule {}
