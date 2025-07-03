@@ -260,13 +260,8 @@ export class ProductsController {
 
   @UseGuards(AuthGuard)
   @Get('saved')
-  getSavedPosts(
-    @Req()
-    req: Request & {
-      user: { userId: string };
-    }
-  ) {
-    return this.saveItemsService.getSaved('product', req.user.userId);
+  getSavedPosts(@Req() req: Request & { user: { userId: string } }, @Query() filterDto: FilterProductsDto) {
+    return this.saveItemsService.getSaved('product', req.user.userId, filterDto);
   }
 
   @Get(':id')

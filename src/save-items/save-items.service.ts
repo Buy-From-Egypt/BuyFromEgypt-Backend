@@ -1,6 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ValidationService } from '../common/validation/validation.service';
+import { PaginationService } from '../common/modules/pagination/pagination.service';
+import { PaginationDto } from '../common/dto/pagination.dto';
+import { PaginatedResponse } from '../common/interfaces/pagination.interface';
+import { FilterProductsDto } from '../common/dto/filter-products.dto';
+import { FilterService } from '../common/modules/filter/filter.service';
 
 export const ENTITY_TYPES = ['post', 'product'] as const;
 export type SaveableEntity = (typeof ENTITY_TYPES)[number];
@@ -9,7 +14,9 @@ export type SaveableEntity = (typeof ENTITY_TYPES)[number];
 export class SaveItemsService {
   constructor(
     private prisma: PrismaService,
-    private validationService: ValidationService
+    private validationService: ValidationService,
+    private paginationService: PaginationService,
+    private filterService: FilterService
   ) {}
 
   private getRelationField(entityType: SaveableEntity) {
@@ -68,16 +75,39 @@ export class SaveItemsService {
     };
   }
 
-  async getSaved(entityType: SaveableEntity, userId: string) {
+  async getSaved(entityType: SaveableEntity, userId: string, filterDto: FilterProductsDto): Promise<PaginatedResponse<any>> {
     const relation = this.getRelationField(entityType);
+    const paginationOptions = this.paginationService.getPaginationOptions(filterDto);
+
+    const userWithCount = await this.prisma.user.findUnique({
+      where: { userId },
+      select: {
+        _count: {
+          select: { [relation]: true },
+        },
+      },
+    });
+    const total = userWithCount?._count?.[relation] || 0;
+
+    let where = undefined;
+    let orderBy = undefined;
+    if (entityType === 'product') {
+      const filter = this.filterService.buildProductFilter(filterDto || {});
+      where = filter.where;
+      orderBy = filter.orderBy;
+    }
 
     const user = await this.prisma.user.findUnique({
       where: { userId },
       include: {
         [relation]: {
-          include:
-            entityType === 'post'
-              ? {
+          skip: paginationOptions.skip,
+          take: paginationOptions.limit,
+          ...(entityType === 'product' && where ? { where } : {}),
+          ...(entityType === 'product' && orderBy ? { orderBy } : {}),
+          ...(entityType === 'post'
+            ? {
+                include: {
                   user: {
                     select: {
                       userId: true,
@@ -89,12 +119,13 @@ export class SaveItemsService {
                   },
                   images: true,
                   products: true,
-                }
-              : undefined,
+                },
+              }
+            : {}),
         },
       },
     });
-
-    return user?.[relation] ?? [];
+    const data = user?.[relation] ?? [];
+    return this.paginationService.createPaginatedResponse<any>(data, total, paginationOptions);
   }
 }
